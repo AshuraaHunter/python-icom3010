@@ -3,7 +3,11 @@ from tkinter import ttk
 from PIL import ImageTk, Image
     
 root = Tk()
+root.option_add("*TCombobox*Listbox*Font",('Circular Std Medium',10)) # the dropdown list of the combobox needs to have its styles defined separately
 root.resizable(False,False)
+
+style = ttk.Style()
+style.configure('TNotebook.Tab',font=('Circular Std Medium',10)) # since the tabs are not a different widget type, we can set up a style for them
 
 frame1 = ttk.Frame(root)
 frame2 = ttk.Frame(root)
@@ -12,26 +16,26 @@ frame2.grid(row=0,column=1)
 
 # when we actually add our elements, we'll have to use either grid or place down below.
 # pack absolutely tosses these dimensions out the window
-frame1.config(relief = FLAT)
-frame2.config(relief = FLAT)
+frame1.config(relief=FLAT)
+frame2.config(relief=FLAT)
 
-label_title = ttk.Label(frame1, text = "Desired Job Title")
-label_city = ttk.Label(frame1, text = "City")
-label_prov = ttk.Label(frame1, text = "Province")
-label_key = ttk.Label(frame1, text = "Keywords")
+label_title = ttk.Label(frame1,text="Desired Job Title")
+label_city = ttk.Label(frame1,text="City")
+label_prov = ttk.Label(frame1,text="Province")
+label_key = ttk.Label(frame1,text="Keywords")
 
-label_title.config(font = ('Playfair Display', 18, 'bold')) # font name, size, and style
-label_city.config(font = ('Playfair Display', 18, 'bold'))
-label_prov.config(font = ('Playfair Display', 18, 'bold'))
-label_key.config(font = ('Playfair Display', 18, 'bold'))
+label_title.config(font=('Circular Std Medium',18,'bold')) # font name, size, and style
+label_city.config(font=('Circular Std Medium',18,'bold'))
+label_prov.config(font=('Circular Std Medium',18,'bold'))
+label_key.config(font=('Circular Std Medium',18,'bold'))
 
-entry_title = ttk.Entry(frame1, width = 30)
-entry_city = ttk.Entry(frame1, width = 30)
-entry_key = ttk.Entry(frame1, width = 30)
+entry_title = ttk.Entry(frame1,font=('Circular Std Medium',10),width=30)
+entry_city = ttk.Entry(frame1,font=('Circular Std Medium',10),width=30)
+entry_key = ttk.Entry(frame1,font=('Circular Std Medium',10),width=30)
 
 province = StringVar()
-combobox_prov = ttk.Combobox(frame1, textvariable = province, width=27) # 3 less since the arrow icon takes up added space
-combobox_prov.config(values = ('Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador',
+combobox_prov = ttk.Combobox(frame1,font=('Circular Std Medium',10),textvariable=province,width=27) # 3 less since the arrow icon takes up added space
+combobox_prov.config(values=('Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador',
                                    'Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island',
                                    'Quebec','Saskatchewan','Yukon'))
 combobox_prov.state(['readonly']) # prevents user from typing in combobox
@@ -39,9 +43,9 @@ province.set('Alberta')
 
 # source: https://www.activestate.com/resources/quick-reads/how-to-add-images-in-tkinter/
 logo = Image.open('C:/Users/Owner/Desktop/python-icom3010/career-beacon.png')
-logo = logo.resize((305,72), Image.ANTIALIAS)
+logo = logo.resize((305,72),Image.ANTIALIAS)
 logoPI = ImageTk.PhotoImage(logo)
-logoLabel = ttk.Label(frame1, image = logoPI)
+logoLabel = ttk.Label(frame1,image=logoPI)
 logoLabel.image = logoPI
 
 btn_submit = ttk.Button(frame1, text = "Submit")
@@ -102,9 +106,9 @@ tab_init(fav_canvas,fav_frame,fav_scrollbar)
 tab_init(res_canvas,res_frame,res_scrollbar)
 tab_init(feat_canvas,feat_frame,feat_scrollbar)
 
-job_notebook.add(tab_fav, text = 'Favourites')
-job_notebook.add(tab_res, text = 'Results')
-job_notebook.add(tab_feat, text = 'Featured')
+job_notebook.add(tab_fav,text='Favourites')
+job_notebook.add(tab_res,text='Results')
+job_notebook.add(tab_feat,text='Featured')
 job_notebook.select(0)
 
 root.mainloop()
