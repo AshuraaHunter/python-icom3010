@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import ImageTk, Image
+import mainScrape
     
 root = Tk()
 root.option_add("*TCombobox*Listbox*Font",('Circular Std Medium',10)) # the dropdown list of the combobox needs to have its styles defined separately
@@ -48,7 +49,7 @@ logoPI = ImageTk.PhotoImage(logo)
 logoLabel = ttk.Label(frame1,image=logoPI)
 logoLabel.image = logoPI
 
-btn_submit = ttk.Button(frame1, text = "Submit")
+btn_submit = ttk.Button(frame1,text="Submit",command=lambda:mainScrape.basic_scrape(entry_title.get(),entry_city.get(),combobox_prov.get()))
 
 logoLabel.grid(row=0,column=0)
 
