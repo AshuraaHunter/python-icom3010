@@ -47,13 +47,17 @@ province.set('Alberta')
 # source: https://www.activestate.com/resources/quick-reads/how-to-add-images-in-tkinter/
 logo = Image.open('C:/Users/Owner/Desktop/python-icom3010/career-beacon.png')
 logo = logo.resize((305,72),Image.ANTIALIAS)
-logoPI = ImageTk.PhotoImage(logo)
-logoLabel = ttk.Label(frame1,image=logoPI)
-logoLabel.image = logoPI
+logo_pi = ImageTk.PhotoImage(logo)
+logo_label = ttk.Label(frame1,image=logo_pi)
+logo_label.image = logo_pi
+
+small_logo = Image.open('C:/Users/Owner/Desktop/python-icom3010/cb_small.png')
+small_logo = small_logo.resize((60,60),Image.ANTIALIAS)
+small_logo_pi = ImageTk.PhotoImage(small_logo)
 
 btn_submit = ttk.Button(frame1,text="Submit",command=lambda:scrape())
 
-logoLabel.grid(row=0,column=0)
+logo_label.grid(row=0,column=0)
 
 label_title.grid(row=1,column=0,padx=(10,10),sticky='w')
 entry_title.grid(row=2,column=0)
@@ -82,27 +86,33 @@ def tab_init(canvas,frame,scrollbar):
 
 # update function, which we will call upon inserting a new entry from our searches / queries
 # update_idletasks() lets us process any pending events WITHOUT inadvertently triggering callbacks
-# and we update the canvas' scrollregion to fit the frame's new contents (coords() gets its dimensions)
+# and we update the canvas' scrollregion to fit the frame's new contents (bbox() gets its dimensions)
 def tab_upd(canvas,frame):
     canvas.update_idletasks()
-    canvas.config(scrollregion=frame.coords())
+    canvas.config(scrollregion=canvas.bbox("all"))
 
 
 # each tab needs its own frame
 # each of these frames has a canvas that allows for scrollbar attachment, and which contains a frame that houses the items we'll be storing within it
 tab_fav = ttk.Frame(job_notebook)
 fav_canvas = Canvas(tab_fav)
+fav_canvas.pack()
 fav_frame = ttk.Frame(fav_canvas)
+fav_frame.pack()
 fav_scrollbar = ttk.Scrollbar(tab_fav)
 
 tab_res = ttk.Frame(job_notebook)
 res_canvas = Canvas(tab_res)
+res_canvas.pack()
 res_frame = ttk.Frame(res_canvas)
+res_frame.pack()
 res_scrollbar = ttk.Scrollbar(tab_res)
 
 tab_feat = ttk.Frame(job_notebook)
 feat_canvas = Canvas(tab_feat)
+feat_canvas.pack()
 feat_frame = ttk.Frame(feat_canvas)
+feat_frame.pack()
 feat_scrollbar = ttk.Scrollbar(tab_feat)
 
 tab_init(fav_canvas,fav_frame,fav_scrollbar)
@@ -115,10 +125,38 @@ job_notebook.add(tab_feat,text='Featured')
 job_notebook.select(0)
 
 def scrape():
+    job_notebook.select(1)
     arr = mainScrape.basic_scrape(entry_title.get(),entry_city.get(),combobox_prov.get())
+    cnt = 0
     
     for listing in arr:
-        pass
+        listing_frame = ttk.Frame(res_frame)
+        listing_frame.grid_propagate(0) # keeps our frames a consistent size
+        listing_frame.config(width=360,height=128,
+                             relief=RIDGE,padding=(5,5))
+        
+        icon_label = ttk.Label(listing_frame,image=small_logo_pi)
+        icon_label.image = small_logo_pi
+        listing_title = ttk.Label(listing_frame,text=listing.title)
+        listing_title.config(font=('Circular Std Medium',10,'bold'))
+        listing_company = ttk.Label(listing_frame,text=listing.company)
+        listing_company.config(font=('Circular Std Medium',10,'normal'))
+        listing_location = ttk.Label(listing_frame,text=listing.location)
+        listing_location.config(font=('Circular Std Medium',10,'normal'))
+        listing_date = ttk.Label(listing_frame,text=f"Posted on {listing.date}")
+        listing_date.config(font=('Circular Std Medium',10,'normal'))
+        listing_button = ttk.Button(listing_frame,text="Test")
+        
+        icon_label.grid(row=0,column=0,rowspan=2)
+        listing_title.grid(row=0,column=1) # figure out how to not make this overflow
+        listing_company.grid(row=1,column=1)
+        listing_location.grid(row=2,column=1)
+        listing_date.grid(row=3,column=1)
+        listing_button.grid(row=3,column=2) # place instead of grid
+        
+        listing_frame.grid(row=cnt,column=1)
+        tab_upd(res_canvas,res_frame)
+        cnt += 1
     
 
 root.mainloop()

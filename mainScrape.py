@@ -66,21 +66,19 @@ def basic_scrape(title,city,prov):
             job_title = job.find("div", class_="job_title")
             job_company = job.find("span", class_="name")
             job_location = job.find("span", class_="location") # this can be blank!
-            
-            job_date_input = job.find("div", class_="job_pub_date")
             job_date = (job.find("div", class_="job_pub_date")).attrs['title']
-            
-            job_link_input = job.find("a")
             job_link = (job.find("a")).attrs['href']
             
             arr_listing.append(Listing(job_title.text.strip(),job_company.text.strip(),job_location.text.strip(),job_date,job_link))
-    
+
+            
             print(job_title.text.strip()) # 'strip' allows us to cut out any interfering tags (but not their contents)
             print(job_company.text.strip())
             print(job_location.text.strip())
             print(job_date) # raw date is actually contained within the 'title' attribute, and here's how we extract it
             print(job_link)
             print('\n'*2)
+            
     
     return arr_listing
 
