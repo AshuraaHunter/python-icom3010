@@ -1,6 +1,6 @@
-from multiprocessing.sharedctypes import Value
-import requests
 from bs4 import BeautifulSoup
+import requests
+import cfgScrape as cfg
 
 class Listing:
     def __init__(self,title,company,location,date,link):
@@ -33,18 +33,29 @@ def basic_scrape(title,city,prov):
     maxPNum = 1
     
     arr_listing = []
+    
+    print(city + 'ass')
+    
+    if not city:
+        prov += '-jobs'
         
     while pNum <= maxPNum:
         URL = f"https://www.careerbeacon.com/en/search/{title}-jobs-in-{city}_{prov}?page={pNum}"
+        print(URL)
         page = requests.get(URL)
 
         soup = BeautifulSoup(page.content, "html.parser")
         
         pNumUL = soup.find('ul', class_="pagination")
+        if pNumUL is None:
+            print("ERROR: No results found.")
+            return 0
+        
+        
         pNumLI = pNumUL.find_all('li')
         for li in pNumLI:
             try:
-                maxPNum = int(li.text.strip())
+                maxPNum = min(cfg.settings["max_pages"],int(li.text.strip()))
             except ValueError:
                 pass
         
@@ -52,8 +63,6 @@ def basic_scrape(title,city,prov):
             if li.has_attr('aria-label') and li['aria-label'] == "Last":
                 break
     
-        pNum += 1
-        print(pNum)
 
         # removes the hidden 'in' that is for some reason on the CareerBeacon page
         for span in soup.find_all("span", class_="lower hidden-xs"): 
@@ -78,6 +87,8 @@ def basic_scrape(title,city,prov):
             print(job_date) # raw date is actually contained within the 'title' attribute, and here's how we extract it
             print(job_link)
             print('\n'*2)
+            
+        pNum += 1
             
     
     return arr_listing
