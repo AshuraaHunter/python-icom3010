@@ -12,6 +12,7 @@ root.resizable(False,False)
 
 style = ttk.Style()
 style.configure('TNotebook.Tab',font=('Circular Std Medium',10)) # since the tabs are not a different widget type, we can set up a style for them
+style.configure('Special.TFrame',background='#bead96')
 
 frame1 = ttk.Frame(root)
 frame2 = ttk.Frame(root)
@@ -128,12 +129,15 @@ job_notebook.select(0)
 
 def scrape():
     job_notebook.select(1)
-    arr = mainScrape.basic_scrape(entry_title.get(),entry_city.get(),combobox_prov.get())
+    print(entry_key.get().split(','))
+    arr = mainScrape.basic_scrape(entry_title.get(),entry_city.get(),combobox_prov.get(),entry_key.get().split(','))
     cnt = 0
     
     if not isinstance(arr,list):
-        print(type(arr))
         return
+    
+    for widget in res_frame.winfo_children():
+        widget.destroy()
     
     for listing in arr:
         listing_frame = ttk.Frame(res_frame)
@@ -141,7 +145,11 @@ def scrape():
         listing_frame.config(width=360,height=128,
                              relief=RIDGE,padding=(5,5))
         
+        if listing.keyworded:
+            listing_frame.config(style='Special.TFrame')
+        
         icon_label = ttk.Label(listing_frame,image=small_logo_pi)
+        #icon_label.config(background=listing_frame['background'])
         icon_label.image = small_logo_pi
         
         listing_title = Message(listing_frame,text=listing.title)
@@ -172,5 +180,4 @@ def scrape():
         tab_upd(res_canvas)
         cnt += 1
     
-
 root.mainloop()

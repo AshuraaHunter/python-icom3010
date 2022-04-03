@@ -1,14 +1,16 @@
+from queue import Empty
 from bs4 import BeautifulSoup
 import requests
 import cfgScrape as cfg
 
 class Listing:
-    def __init__(self,title,company,location,date,link):
+    def __init__(self,title,company,location,date,link,keyworded):
         self.title = title
         self.company = company
         self.location = location
         self.date = date
         self.link = link
+        self.keyworded = keyworded
 
 
 """
@@ -28,13 +30,11 @@ searchKey = input("Enter a keyword you'd like to filter by: ")
 print(searchKey)
 """
 
-def basic_scrape(title,city,prov):
+def basic_scrape(title,city,prov,keywords):
     pNum = 1
     maxPNum = 1
     
     arr_listing = []
-    
-    print(city + 'ass')
     
     if not city:
         prov += '-jobs'
@@ -78,7 +78,7 @@ def basic_scrape(title,city,prov):
             job_date = (job.find("div", class_="job_pub_date")).attrs['title']
             job_link = (job.find("a")).attrs['href']
             
-            arr_listing.append(Listing(job_title.text.strip(),job_company.text.strip(),job_location.text.strip(),job_date,job_link))
+            arr_listing.append(Listing(job_title.text.strip(),job_company.text.strip(),job_location.text.strip(),job_date,job_link,False))
 
             
             print(job_title.text.strip()) # 'strip' allows us to cut out any interfering tags (but not their contents)
@@ -89,7 +89,27 @@ def basic_scrape(title,city,prov):
             print('\n'*2)
             
         pNum += 1
+    
+    for listing in arr_listing:
+        if keywords is None:
+            break
+        
+        keyURL = listing.link
+        keyPage = requests.get(keyURL)
+        keySoup = BeautifulSoup(keyPage.content, "html.parser")
+        keyInfoAlpha = keySoup.find("section", class_="details")
+        
+        if keyInfoAlpha is not None:
+            keyInfo = keyInfoAlpha.text.strip()
+        
+        for keyword in keywords:
+            if keyInfo is None or keyInfo is Empty:
+                break
+            elif keyInfo.find(keyword) != -1: # .find() returns -1 if its search is unsuccessful
+                listing.keyworded = True
+                break
             
+    arr_listing.sort(key=lambda listing: listing.keyworded,reverse=True) # sorts the list in descending order based on if keywords were marked as present (True > False)
     
     return arr_listing
 
