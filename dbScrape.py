@@ -16,6 +16,9 @@ except Error as e:
     
 cursor = conn.cursor()
 conn.execute("create table if not exists favourites(title, company, location, date, link, keyworded, featured)")
+conn.execute("delete from favourites where exists (select 1 from favourites f1 where favourites.link = f1.link"
+             + " and favourites.rowid > f1.rowid)")
+conn.commit()
 
 def add_listing(title,company,location,date,link,keyworded,featured):
     listing = (title,company,location,date,link,int(keyworded),int(featured))
