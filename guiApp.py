@@ -1,6 +1,8 @@
+import atexit
 from tkinter import *
 from tkinter import ttk
 from PIL import ImageTk, Image
+import dbScrape
 import mainScrape
 import webbrowser # handles links
 
@@ -48,6 +50,12 @@ logo_label.image = logo_pi
 small_logo = Image.open('C:/Users/Owner/Desktop/python-icom3010/cb_small.png')
 small_logo = small_logo.resize((60,60),Image.ANTIALIAS)
 small_logo_pi = ImageTk.PhotoImage(small_logo)
+
+star = Image.open('C:/Users/Owner/Desktop/python-icom3010/star.png')
+star_pi = ImageTk.PhotoImage(star)
+
+ex = Image.open('C:/Users/Owner/Desktop/python-icom3010/ex.png')
+ex_pi = ImageTk.PhotoImage(ex)
 
 feat = BooleanVar()
 feat_check = ttk.Checkbutton(root,text="Include featured results (may be irrelevant)",
@@ -123,9 +131,76 @@ job_notebook.add(tab_res,text='Results')
 job_notebook.add(tab_feat,text='Featured')
 job_notebook.select(0)
 
+
+def fav_callback(frame,listing):
+    frame.grid_forget()
+    frame.destroy()
+    add_to_favourites(listing,True)
+    tab_upd(res_canvas)
+    tab_upd(feat_canvas)
+    
+
+def ex_callback(frame,listing):
+    frame.grid_forget()
+    frame.destroy()
+    dbScrape.remove_listing(listing.title,listing.company,listing.location,listing.date,
+                             listing.link,listing.keyworded,listing.featured)
+    tab_upd(fav_canvas)
+
+
+def load_favourites():
+    job_notebook.select(0)
+    arr = dbScrape.fetch_listings()
+    cnt = 0
+    
+    if not isinstance(arr,list):
+        return
+    
+    for listing in arr:
+        add_to_favourites(listing,False)
+        cnt += 1
+        
+
+def add_to_favourites(listing,insert):
+    listing_frame = ttk.Frame(fav_frame)
+    listing_frame.grid_propagate(0)
+    listing_frame.config(width=360,height=128,
+                             relief=RIDGE,padding=(5,5))
+        
+    icon_label = ttk.Label(listing_frame,image=small_logo_pi)
+    icon_label.image = small_logo_pi
+    ex_button = Button(listing_frame,image=ex_pi,borderwidth=0,command=lambda listing_frame=listing_frame, listing=listing: ex_callback(listing_frame,listing))
+        
+    listing_title = Message(listing_frame,text=listing.title,font=('Circular Std Medium',10,'bold'),width=240)
+    listing_company = Message(listing_frame,text=listing.company,font=('Circular Std Medium',10,'normal'),width=180)
+    listing_location = ttk.Label(listing_frame,text=listing.location,font=('Circular Std Medium',10,'normal'))
+    listing_date = ttk.Label(listing_frame,text=f"Posted on {listing.date}",font=('Circular Std Medium',10,'normal'))
+        
+    listing_button = ttk.Button(listing_frame,width=10,text="Apply",command=lambda listing=listing: webbrowser.open(listing.link)) # stores the listing properties; otherwise this points to the very last link element
+        
+    icon_label.grid(row=0,column=0,rowspan=2)
+    listing_title.grid(row=0,column=1)
+    listing_company.grid(row=1,column=1)
+    listing_location.grid(row=2,column=1)
+    listing_date.grid(row=3,column=1)
+    listing_button.place(relx=0.8,rely=0.8)
+    ex_button.place(relx=0.925,rely=0.5)
+        
+    listing_frame.grid_columnconfigure(1,weight=1)
+        
+    measure = fav_frame.grid_size()
+    listing_frame.grid(row=measure[1],column=1)
+    tab_upd(fav_canvas)
+    
+    if insert is True:
+        dbScrape.add_listing(listing.title,listing.company,listing.location,listing.date,
+                             listing.link,listing.keyworded,listing.featured)
+    else:
+        pass
+    
+
 def scrape():
     job_notebook.select(1)
-    print(entry_key.get().split(','))
     arr = mainScrape.basic_scrape(entry_title.get(),entry_city.get(),combobox_prov.get(),entry_key.get().split(','),feat.get())
     cnt = 0
     
@@ -147,6 +222,7 @@ def scrape():
         icon_label = ttk.Label(listing_frame,image=small_logo_pi)
         #icon_label.config(background=listing_frame['background'])
         icon_label.image = small_logo_pi
+        star_button = Button(listing_frame,image=star_pi,borderwidth=0,command=lambda listing_frame=listing_frame, listing=listing: fav_callback(listing_frame,listing))
         
         listing_title = Message(listing_frame,text=listing.title,font=('Circular Std Medium',10,'bold'),width=240)
         listing_company = Message(listing_frame,text=listing.company,font=('Circular Std Medium',10,'normal'),width=180)
@@ -163,6 +239,7 @@ def scrape():
             listing_location.config(style='Special.TLabel')
             listing_date.config(style='Special.TLabel')
             listing_button.config(style='Special.TButton')
+            star_button.config(style='Special.TButton')
         
         icon_label.grid(row=0,column=0,rowspan=2)
         listing_title.grid(row=0,column=1)
@@ -170,6 +247,7 @@ def scrape():
         listing_location.grid(row=2,column=1)
         listing_date.grid(row=3,column=1)
         listing_button.place(relx=0.8,rely=0.8)
+        star_button.place(relx=0.925,rely=0.5)
         
         listing_frame.grid_columnconfigure(1,weight=1)
         
@@ -178,4 +256,12 @@ def scrape():
         tab_upd(feat_canvas)
         cnt += 1
     
+
+def close_callback():
+    dbScrape.close_db()
+
+
+load_favourites()
+
+atexit.register(close_callback) # closes DB on exit
 root.mainloop()

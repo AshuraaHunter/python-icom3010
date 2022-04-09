@@ -32,6 +32,10 @@ print(searchKey)
 """
 
 def basic_scrape(title,city,prov,keywords,feat):
+    title = title.replace(' ','-')
+    city = city.replace(' ','-')
+    prov = prov.replace(' ','-')
+    
     pNum = 1
     maxPNum = 1
     
@@ -50,20 +54,18 @@ def basic_scrape(title,city,prov,keywords,feat):
         
         pNumUL = soup.find('ul', class_="pagination")
         if pNumUL is None:
-            print("ERROR: No results found.")
-            return 0
+            pass
+        else:
+            pNumLI = pNumUL.find_all('li')
+            for li in pNumLI:
+                try:
+                    maxPNum = min(cfg.settings["max_pages"],int(li.text.strip()))
+                except ValueError:
+                    pass
         
         
-        pNumLI = pNumUL.find_all('li')
-        for li in pNumLI:
-            try:
-                maxPNum = min(cfg.settings["max_pages"],int(li.text.strip()))
-            except ValueError:
-                pass
-        
-        
-            if li.has_attr('aria-label') and li['aria-label'] == "Last":
-                break
+                if li.has_attr('aria-label') and li['aria-label'] == "Last":
+                    break
     
 
         # removes the hidden 'in' that is for some reason on the CareerBeacon page
@@ -72,6 +74,10 @@ def basic_scrape(title,city,prov,keywords,feat):
 
         results = soup.find(id="search_result")
         jobs = results.find_all("div", class_="non_featured_job_content")
+        
+        if len(jobs) == 0:
+            print("ERROR: No results found.")
+            return 0
 
         for job in jobs:
             job_title = job.find("div", class_="job_title")
